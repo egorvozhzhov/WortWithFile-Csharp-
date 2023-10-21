@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
@@ -8,23 +9,55 @@ using System.Xml.Linq;
 
 namespace HelloApp
 {
-    class Files
+    class Common
+    {
+
+        private static string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        public static FileInfo AskName(string type)
+        {
+            Console.WriteLine("Введите имя файла");
+            var FilePath = Path.Combine(dir, Console.ReadLine() + type);
+            var FileInfo = new FileInfo(FilePath);
+            return FileInfo;
+        }
+        
+        public static void DeleteAllTypes(string type)
+        {
+            var FileInfo = AskName(type);
+            if (FileInfo.Exists)
+            {
+              FileInfo.Delete();
+              Console.WriteLine("Файл удален");
+            }
+            else
+            {
+              Console.WriteLine("Файл не найден");
+            }
+        }
+    }
+
+    class Files : Common
     {
         private static string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         public static void CreateFile()
         {
-            Console.WriteLine("Введите имя файла");
-            var FilePath = Path.Combine(dir, Console.ReadLine());
-            var FileInfo = new FileInfo(FilePath);
-            using var stream = FileInfo.Create();
-            Console.WriteLine("Файл создан");
+            var FileInfo = AskName("");
+            if (FileInfo.Exists)
+            {
+              Console.WriteLine("Файл уже существует");
+            }
+            else
+            {
+              var f = FileInfo.Create();
+              f.Dispose();
+              Console.WriteLine("Файл создан");
+            }
         }
 
         public static void WriteFile()
         {
-            Console.WriteLine("Введите имя файла");
-            var FilePath = Path.Combine(dir, Console.ReadLine());
-            var FileInfo = new FileInfo(FilePath);
+            var FileInfo = AskName("");
+            var FilePath = Path.Combine(dir, FileInfo.Name);
             if (FileInfo.Exists)
             {
                 Console.WriteLine("Введите строку для записи в файл:");
@@ -44,27 +77,11 @@ namespace HelloApp
 
         }
 
-        public static void DeleteFile()
-        {
-            Console.WriteLine("Введите имя файла");
-            var FilePath = Path.Combine(dir, Console.ReadLine());
-            var FileInfo = new FileInfo(FilePath);
-            if (FileInfo.Exists)
-            {
-                FileInfo.Delete();
-                Console.WriteLine("Файл удален");
-            }
-            else
-            {
-                Console.WriteLine("Файл не найден");
-            }
-        }
 
         public static void ReadFile()
         {
-            Console.WriteLine("Введите имя файла");
-            var FilePath = Path.Combine(dir, Console.ReadLine());
-            var FileInfo = new FileInfo(FilePath);
+            var FileInfo = AskName("");
+            var FilePath = Path.Combine(dir, FileInfo.Name);
             if (FileInfo.Exists)
             {
                 using (FileStream fstream = File.OpenRead(FilePath))
@@ -94,7 +111,7 @@ namespace HelloApp
         public int Sale { get; set; }
     }
 
-    public static class JSON
+    class JSON : Common
     {
         private static string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         public static void CreateAndWriteFile()
@@ -116,11 +133,11 @@ namespace HelloApp
 
             //Console.WriteLine("Введите имя файла");
             var FilePath = Path.Combine(dir, fname);
-            var FileInfo = new FileInfo(FilePath);
+
             //string fileName = "Client.json";
             
             string jsonString = JsonSerializer.Serialize(client);
-            //File.AppendAllText(FilePath, jsonString);
+            
             File.WriteAllText(FilePath, jsonString);
             Console.WriteLine("JSON файл создан и запись сделана");
             //Console.WriteLine(File.ReadAllText(FilePath));
@@ -128,10 +145,8 @@ namespace HelloApp
 
         public static void ReadFile()
         {
-            Console.WriteLine("Введите имя файла");
-            string fname = Console.ReadLine() + ".json";
-            var FilePath = Path.Combine(dir, fname);
-            var FileInfo = new FileInfo(FilePath);
+            var FileInfo = AskName(".json");
+            var FilePath = Path.Combine(dir, FileInfo.Name);
             if (FileInfo.Exists)
             {
                 string jsonString = File.ReadAllText(FilePath);
@@ -148,25 +163,9 @@ namespace HelloApp
             }
 
         }
-
-        public static void Delete()
-        {
-            Console.WriteLine("Введите имя файла");
-            var FilePath = Path.Combine(dir, Console.ReadLine() + ".json");
-            var FileInfo = new FileInfo(FilePath);
-            if (FileInfo.Exists)
-            {
-                FileInfo.Delete();
-                Console.WriteLine("Файл удален");
-            }
-            else
-            {
-                Console.WriteLine("Файл не найден");
-            }
-        }
     }
 
-    public static class XML
+    class XML : Common
     {
       private static string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
       public static void Create()
@@ -177,11 +176,8 @@ namespace HelloApp
       }
       public static void AddToXML()
       {
-        Console.WriteLine("Введите имя файла");
-        string fname = Console.ReadLine() + ".xml";
-        var FilePath = Path.Combine(dir, fname);
-        var FileInfo = new FileInfo(FilePath);
-
+        var FileInfo = AskName(".xml");
+        var FilePath = Path.Combine(dir, FileInfo.Name);
         if (FileInfo.Exists)
         {
           Console.WriteLine("Введите ID клиента");
@@ -226,10 +222,8 @@ namespace HelloApp
       public static void ReadXml()
       {
 
-        Console.WriteLine("Введите имя файла");
-        string fname = Console.ReadLine() + ".xml";
-        var FilePath = Path.Combine(dir, fname);
-        var FileInfo = new FileInfo(FilePath);
+        var FileInfo = AskName(".xml");
+        var FilePath = Path.Combine(dir, FileInfo.Name);
         if (FileInfo.Exists)
         {
           XDocument xdoc = XDocument.Load(FilePath);
@@ -255,25 +249,8 @@ namespace HelloApp
 
       
       }
-
-      public static void DeleteXML()
-      {
-        
-        Console.WriteLine("Введите имя файла");
-        var FilePath = Path.Combine(dir, Console.ReadLine() + ".xml");
-        var FileInfo = new FileInfo(FilePath);
-        if (FileInfo.Exists)
-        {
-          FileInfo.Delete();
-          Console.WriteLine("Файл удален");
-        }
-        else
-        {
-          Console.WriteLine("Файл не найден");
-        }
-      }
     }
-    public static class ZIP
+    class ZIP : Common
     {
       private static string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
@@ -321,6 +298,7 @@ namespace HelloApp
               }
             }
             Console.WriteLine($"Файл с названием {fname} добавлен в архив");
+            Console.WriteLine("Размер архива: " + FileInfo.Length.ToString());
           }
           else
           {
@@ -359,21 +337,6 @@ namespace HelloApp
           Console.WriteLine("Архива с таким названием нет");
         }
 
-      }
-      public static void DeleteZIP()
-      {
-        Console.WriteLine("Введите имя архива");
-        var FilePath = Path.Combine(dir, Console.ReadLine() + ".zip");
-        var FileInfo = new FileInfo(FilePath);
-        if (FileInfo.Exists)
-        {
-          FileInfo.Delete();
-          Console.WriteLine("Архив удален");
-        }
-        else
-        {
-          Console.WriteLine("Архив не найден");
-        }
       }
     }
 
@@ -425,7 +388,7 @@ namespace HelloApp
                         Files.ReadFile();
                         break;
                     case 5:
-                        Files.DeleteFile();
+                        Common.DeleteAllTypes("");
                         break;
                     case 6:
                         JSON.CreateAndWriteFile();
@@ -434,8 +397,8 @@ namespace HelloApp
                       JSON.ReadFile();
                       break;
                     case 8:
-                        JSON.Delete();
-                        break;
+                      Common.DeleteAllTypes(".json");
+                      break;
                     case 9:
                         XML.Create();
                         break;
@@ -446,7 +409,7 @@ namespace HelloApp
                       XML.ReadXml();
                       break;
                     case 12:
-                      XML.DeleteXML();
+                      Common.DeleteAllTypes(".xml");
                       break;
                     case 13:
                       ZIP.CreateZip();
@@ -458,7 +421,7 @@ namespace HelloApp
                       ZIP.ExtractFromZip();
                       break;
                     case 16:
-                      ZIP.DeleteZIP();
+                      Common.DeleteAllTypes(".zip");
                       break;
 
                     default:
